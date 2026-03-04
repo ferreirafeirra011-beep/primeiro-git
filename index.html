@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Sistema de Estoque</title>
+</head>
+<body>
+    <h1>Controle de Estoque</h1>
+
+    <h2>Cadastrar Produto</h2>
+    <input id="nome" placeholder="Nome">
+    <input id="preco" placeholder="Preço" type="number">
+    <input id="quantidade" placeholder="Quantidade" type="number">
+    <button onclick="cadastrar()">Cadastrar</button>
+
+    <h2>Produtos</h2>
+    <ul id="lista"></ul>
+
+<script>
+async function carregar() {
+    const res = await fetch("/produtos");
+    const produtos = await res.json();
+
+    const lista = document.getElementById("lista");
+    lista.innerHTML = "";
+
+    produtos.forEach(p => {
+        const li = document.createElement("li");
+        li.innerHTML = `
+            ${p.nome} - R$ ${p.preco} - Estoque: ${p.quantidade}
+            <button onclick="vender('${p.nome}')">Vender</button>
+            <button onclick="remover('${p.nome}')">Excluir</button>
+        `;
+        lista.appendChild(li);
+    });
+}
+
+async function cadastrar() {
+    const nome = document.getElementById("nome").value;
+    const preco = parseFloat(document.getElementById("preco").value);
+    const quantidade = parseInt(document.getElementById("quantidade").value);
+
+    await fetch("/produtos", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nome, preco, quantidade })
+    });
+
+    carregar();
+}
+
+async function vender(nome) {
+    await fetch("/vender/" + nome, { method: "POST" });
+    carregar();
+}
+
+async function remover(nome) {
+    await fetch("/produtos/" + nome, { method: "DELETE" });
+    carregar();
+}
+
+carregar();
+</script>
+
+</body>
+</html>
